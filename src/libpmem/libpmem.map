@@ -50,6 +50,8 @@ libpmem.so {
 		pmem_memmove_nodrain;
 		pmem_memcpy_nodrain;
 		pmem_memset_nodrain;
+		pmem_invalidate;
+		pmem_needs_invalidate;
 	local:
 		*;
 };

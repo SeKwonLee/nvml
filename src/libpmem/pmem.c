@@ -1183,6 +1183,24 @@ pmem_parse_cpuinfo(char *line)
 }
 
 /*
+ * pmem_needs_invalidate -- Does the memory need to be invalidated.
+ */
+int
+pmem_needs_invalidate(void *pmemdest, size_t len)
+{
+	return pmem_is_pmem(pmemdest, len);
+}
+
+/*
+ * pmem_invalidate -- Invalidate these memory.
+ */
+void
+pmem_invalidate(void *pmemdest, size_t len)
+{
+        flush_clflush(pmemdest, len);
+}
+
+/*
  * pmem_init -- load-time initialization for pmem.c
  *
  * Called automatically by the run-time loader.
