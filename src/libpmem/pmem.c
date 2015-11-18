@@ -190,11 +190,70 @@
  *		memset_nodrain_normal()
  *		memset_nodrain_movnt()
  *
+ *	Func_needs_invalidate is used by pmem_needs_invalidate to call one of:
+ *		pmem_is_pmem
+ *
+ *	Func_invalidate is used by pmem_invalidate to call one of:
+ *		flush_clflush
+ *
  * DEBUG LOGGING
  *
  * Many of the functions here get called hundreds of times from loops
  * iterating over ranges, making the usual LOG() calls at level 3
  * impractical.  The call tracing log for those functions is set at 15.
+ *
+ * ***************************************************************************
+ *
+ * Arm64
+ *
+ * Instruction Equivilents:
+ *
+ * Intstruction		Kernel Macro	arm64 equiv	Description
+ *
+ * CLWB					DC CVAC		Flush to POU
+ * CLFLUSHOPT				DC CIVAC	Flush to POC
+ * CLFLUSH				DC CIVAC
+ * PCOMMIT				?????		Block Waiting for RAM
+ * SFENCE		wmb()		DSB ST		Write Memory Barrier
+ *
+ * Flushing range pmem on aarm64
+ *
+ * DSB ST		Serialized memomry (needed?)
+ * DC CVAC		For each cache line in the range
+ * DSB ST		Serialize memory
+ * ??????		Wait for the memory system
+ * DSB ST		Serialize memory
+ *
+ *
+ * Invalidate Range on arm64
+ *
+ * DSB ST		Serialized memory
+ * DC IVAC		For each cache line in the given range
+ * DSB ST		Serialize memory (needed?)
+ *
+ * Unlike the x86_64 version these functions are not determined at runtime
+ *
+ * Func_predrain_fence
+ *	_aarch64_fence()
+ *
+ * Func_drain
+ *	_aarch64_drain()  Note: This is missing the specifics on getting memory out to the fabric
+ *
+ * Func_flush
+ *	_aarch64_flush_cache_pou()
+ *
+ * Func_memove_nodrain
+ *	memove_nodrain_normal()
+ *
+ *
+ * Func_memset_nodrain
+ *	memset_nodrain_normal()
+ *
+ * Func_needs_invalidate
+ *	pmem_is_pmem
+ *
+ * Func_invalidate
+ *	aarch_64_invalidate
  */
 
 #include <sys/mman.h>
@@ -203,7 +262,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#ifdef __x86_64__
 #include <xmmintrin.h>
+#endif
 
 #include "libpmem.h"
 
@@ -217,14 +278,37 @@
  * intrinsic functions are not always available.  The intrinsic
  * functions are defined here in terms of asm statements for now.
  */
+#ifdef __x86_64__
 #define	_mm_clflushopt(addr)\
 	asm volatile(".byte 0x66; clflush %0" : "+m" (*(volatile char *)addr));
 #define	_mm_clwb(addr)\
 	asm volatile(".byte 0x66; xsaveopt %0" : "+m" (*(volatile char *)addr));
 #define	_mm_pcommit()\
 	asm volatile(".byte 0x66, 0x0f, 0xae, 0xf8");
+#endif
+
+#ifdef __aarch64__
+
+/*
+ * It seems that libgcc has a possible alternative implementation to this one
+ * https://code.woboq.org/gcc/libgcc/config/aarch64/sync-cache.c.html
+ * It doesn't seem to match what we'd like to do though.
+ */
+
+#define	_aarch64_sync_cache_va_pou(addr)\
+	asm volatile("dc\tcvac, %0" : : "r" (addr) : "memory");
+
+#define	_aarch64_fence()\
+	asm volatile("dsb\tst");
+
+#define	_aarch64_invalidate(addr)\
+	asm volatile("dc\tivac, %0" : : "r" (addr) : "memory");
+
+#endif
 
 #define	FLUSH_ALIGN ((uintptr_t)64)
+
+#ifdef __x86_64__
 
 #define	ALIGN_MASK	(FLUSH_ALIGN - 1)
 
@@ -239,6 +323,7 @@
 #define	MOVNT_SIZE	16
 #define	MOVNT_MASK	(MOVNT_SIZE - 1)
 #define	MOVNT_SHIFT	4
+#endif
 
 #define	MOVNT_THRESHOLD	256
 
@@ -255,6 +340,8 @@ pmem_has_hw_drain(void)
 {
 	return Has_hw_drain;
 }
+
+#ifdef __x86_64__
 
 /*
  * predrain_fence_empty -- (internal) issue the pre-drain fence instruction
@@ -278,7 +365,20 @@ predrain_fence_sfence(void)
 
 	_mm_sfence();	/* ensure CLWB or CLFLUSHOPT completes before PCOMMIT */
 }
+#endif
 
+#ifdef __aarch64__
+static void
+__aarch64_predrain_fence_sfence(void)
+{
+	LOG(15, NULL);
+
+	_aarch64_fence();
+
+}
+#endif
+
+#ifdef __x86_64__
 /*
  * pmem_drain() calls through Func_predrain_fence to do the fence.  Although
  * initialized to predrain_fence_empty(), once the existence of the CLWB or
@@ -287,7 +387,13 @@ predrain_fence_sfence(void)
  * most common case on modern hardware that supports persistent memory.
  */
 static void (*Func_predrain_fence)(void) = predrain_fence_empty;
+#endif
 
+#ifdef __aarch64__
+static void (*Func_predrain_fence)(void) = __aarch64_predrain_fence_sfence;
+#endif
+
+#ifdef __x86_64__
 /*
  * drain_no_pcommit -- (internal) wait for PM stores to drain, empty version
  */
@@ -315,7 +421,22 @@ drain_pcommit(void)
 	_mm_pcommit();
 	_mm_sfence();
 }
+#endif
 
+#ifdef __aarch64__
+static void
+_aarch64_drain(void)
+{
+	LOG(15, NULL);
+
+	Func_predrain_fence();
+	// Magic to go to FAM
+	Func_predrain_fence();
+
+}
+#endif
+
+#ifdef __x86_64__
 /*
  * pmem_drain() calls through Func_drain to do the work.  Although
  * initialized to drain_no_pcommit(), once the existence of the pcommit
@@ -324,6 +445,11 @@ drain_pcommit(void)
  * on modern hardware that supports persistent memory.
  */
 static void (*Func_drain)(void) = drain_no_pcommit;
+#endif
+
+#ifdef __aarch64__
+static void (*Func_drain)(void) = _aarch64_drain;
+#endif
 
 /*
  * pmem_drain -- wait for any PM stores to drain from HW buffers
@@ -336,6 +462,7 @@ pmem_drain(void)
 	Func_drain();
 }
 
+#ifdef __x86_64__
 /*
  * flush_clflush -- (internal) flush the CPU cache, using clflush
  */
@@ -354,6 +481,7 @@ flush_clflush(void *addr, size_t len)
 		uptr < (uintptr_t)addr + len; uptr += FLUSH_ALIGN)
 		_mm_clflush((char *)uptr);
 }
+
 
 /*
  * flush_clwb -- (internal) flush the CPU cache, using clwb
@@ -394,7 +522,32 @@ flush_clflushopt(void *addr, size_t len)
 		_mm_clflushopt((char *)uptr);
 	}
 }
+#endif
 
+#ifdef __aarch64__
+static void
+flush_cache_pou(void *addr, size_t len)
+{
+	LOG(15, "addr %p len %zu", addr, len);
+
+	uintptr_t uptr;
+
+	/* check if this is true for arm */
+	/* clear cache of size for distance (hopefully) No sur what FLUSH_ALIGN
+	 * actualy does */
+
+	/*
+	 * 1) how do FLSUH_ALIGN and similiar macros effect this code?
+	 */
+	for (uptr = (uintptr_t)addr & ~(FLUSH_ALIGN - 1);
+		uptr < (uintptr_t)addr + len; uptr += FLUSH_ALIGN) {
+		_aarch64_sync_cache_va_pou((char *)uptr);
+	}
+}
+#endif
+
+
+#ifdef __x86_64__
 /*
  * pmem_flush() calls through Func_flush to do the work.  Although
  * initialized to flush_clflush(), once the existence of the clflushopt
@@ -403,6 +556,11 @@ flush_clflushopt(void *addr, size_t len)
  * on modern hardware that supports persistent memory.
  */
 static void (*Func_flush)(void *, size_t) = flush_clflush;
+#endif
+
+#ifdef __aarch64__
+static void (*Func_flush)(void *, size_t) = flush_cache_pou;
+#endif
 
 /*
  * pmem_flush -- flush processor cache for the given range
@@ -498,6 +656,10 @@ is_pmem_never(void *addr, size_t len)
 }
 
 /*
+ * aarch64 is obviously not pmem enable so let's just get rid of the function
+ */
+#ifdef __x86_64__
+/*
  * is_pmem_proc -- (internal) use /proc to implement pmem_is_pmem()
  *
  * This function returns true only if the entire range can be confirmed
@@ -590,6 +752,7 @@ is_pmem_proc(void *addr, size_t len)
 	LOG(3, "returning %d", retval);
 	return retval;
 }
+#endif
 
 /*
  * pmem_is_pmem() calls through Func_is_pmem to do the work.  Although
@@ -668,6 +831,7 @@ memmove_nodrain_normal(void *pmemdest, const void *src, size_t len)
 	return pmemdest;
 }
 
+#ifdef __x86_64__
 /*
  * memmove_nodrain_movnt -- (internal) memmove to pmem without hw drain, movnt
  */
@@ -884,6 +1048,7 @@ memmove_nodrain_movnt(void *pmemdest, const void *src, size_t len)
 
 	return pmemdest;
 }
+#endif
 
 /*
  * pmem_memmove_nodrain() calls through Func_memmove_nodrain to do the work.
@@ -954,6 +1119,7 @@ memset_nodrain_normal(void *pmemdest, int c, size_t len)
 	return pmemdest;
 }
 
+#ifdef __x86_64__
 /*
  * memset_nodrain_movnt -- (internal) memset to pmem without hw drain, movnt
  */
@@ -1044,6 +1210,7 @@ memset_nodrain_movnt(void *pmemdest, int c, size_t len)
 
 	return pmemdest;
 }
+#endif
 
 /*
  * pmem_memset_nodrain() calls through Func_memset_nodrain to do the work.
@@ -1077,8 +1244,9 @@ pmem_memset_persist(void *pmemdest, int c, size_t len)
 	return pmemdest;
 }
 
+#ifdef __x86_64__
 /*
- * pmem_parse_cpuinfo -- parses one line from /proc/cpuinfo
+ * pmem_parse_cpuinfo -- parses one line from /proc/cpuinfo for x86
  *
  * Returns 1 when line contains flags, 0 otherwise.
  */
@@ -1181,14 +1349,58 @@ pmem_parse_cpuinfo(char *line)
 
 	return 1;
 }
+#endif
+#ifdef __aarch64__
+/*
+ * pmem_parse_cpuinfo -- parse line from /proc/cpuinfo for aarch64
+ *
+ * Returns 1 when line contains flags, 0 otherwise.
+ */
+static int
+pmem_parse_cpuinfo(char *line)
+{
+	/* for the first revision I want to assume that there's no useful features */
+	return 0;
+}
 
+static void
+aarch64_invalidate(void *addr, size_t len)
+{
+	LOG(15, "addr %p len %zu", addr, len);
+
+	uintptr_t uptr;
+
+	_aarch64_fence();
+
+	for (uptr = (uintptr_t)addr & ~(FLUSH_ALIGN -1);
+		uptr < (uintptr_t)addr + len; uptr += FLUSH_ALIGN) {
+		_aarch64_invalidate((char *)uptr);
+	}
+
+	_aarch64_fence();
+}
+#endif
+
+#ifdef __x86_64__
+static int (*Func_needs_invalidate)(void *, size_t) = pmem_is_pmem;
+#endif
+#ifdef __aarch64__
+static int (*Func_needs_invalidate)(void *, size_t len) = pmem_is_pmem;
+#endif
+
+#ifdef __x86_64__
+static void (*Func_invalidate)(void *, size_t) = flush_clflush;
+#endif
+#ifdef __aarch64__
+static void (*Func_invalidate)(void *, size_t) = aarch64_invalidate;
+#endif
 /*
  * pmem_needs_invalidate -- Does the memory need to be invalidated.
  */
 int
 pmem_needs_invalidate(void *pmemdest, size_t len)
 {
-	return pmem_is_pmem(pmemdest, len);
+	return Func_needs_invalidate(pmemdest, len);
 }
 
 /*
@@ -1197,7 +1409,7 @@ pmem_needs_invalidate(void *pmemdest, size_t len)
 void
 pmem_invalidate(void *pmemdest, size_t len)
 {
-        flush_clflush(pmemdest, len);
+	Func_invalidate(pmemdest, len);
 }
 
 /*
