@@ -1,0 +1,5 @@
+# This is our first package but we do not want to upload it yet.
+# Please refer to Debian Developer's Reference section 5.1 (New packages) for details:
+# https://www.debian.org/doc/manuals/developers-reference/pkgs.html#newpackage
+new-package-should-close-itp-bug
+libpmem: package-name-doesnt-match-sonames

@@ -1,0 +1,5 @@
+nvml (0.1) unstable; urgency=medium
+
+  * This is a first attempt to package NVML code.
+
+ -- Zakhar Volchak <zakhar.volchak@hpe.com>  Tue, 19 Jan 2016 17:04:00 -0700

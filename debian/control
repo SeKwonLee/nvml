@@ -1,0 +1,30 @@
+Source: nvml
+Maintainer: Zakhar Volchak <zakhar.volchak@hpe.com>
+Section: misc
+Priority: optional
+Build-Depends: debhelper (>= 9), uuid-dev
+Standards-version: 3.9.4
+Homepage: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml/tree/hp_l4tm/src/libpmem
+Vcs-Browser: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml/tree/hp_l4tm/src/libpmem
+Vcs-Git: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml.git
+
+Package: libpmem
+Version: 0.1
+Section: misc
+Priority: optional
+Architecture: amd64 arm64
+Depends: ${shlibs:Depends}, ${misc:Depends} 
+Maintainer: Zakhar Volchak <zakhar.volchak@hpe.com>
+Description: NVML libpmem library
+ NVML library for Persistent Memory support
+Homepage: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml/tree/hp_l4tm/src/libpmem
+
+Package: libpmem-dev
+Version: 0.1
+Section: libdevel
+Priority: optional
+Architecture: amd64 arm64
+Depends: libpmem (=${binary:Version}), uuid-dev, ${shlibs:Depends}, ${misc:Depends}
+Maintainer: Zakhar Volchak <zakhar.volchak@hpe.com>
+Description: Development files for libpmem
+ Development files for libpmem library.

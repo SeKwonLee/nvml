@@ -47,4 +47,4 @@ Tue Jun 30 2015 Andy Rudoff <andy.rudoff@intel.com>
 Thu Sep 11 2014 Andy Rudoff <andy.rudoff@intel.com>
 
 	* Version 0.1
-	Initial development done in 0.1 builds
+	First attempt to package NVML
