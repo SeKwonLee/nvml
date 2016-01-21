@@ -1,3 +1,9 @@
+nvml (0.4-l4tm) unstable; urgency=medium
+
+  * Packaging for arm64 & x86_64 release 0.4.
+
+ -- Justin Vreeland <justin.mcd.vreeland@hpe.com>  Thu, 21 Jan 2016 19:58:28 -0700
+
 nvml (0.1) unstable; urgency=medium
 
   * This is a first attempt to package NVML code.

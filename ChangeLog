@@ -1,3 +1,9 @@
+Thu Jan 21 2016 Justin Vreeland <justin.mcd.vreeland@hpe.com>
+
+	* version 0.4-l4tm
+	This NVML version focuses on arm64 compatibility for libpmem and
+	improved packaging (from hpes perspective).
+
 Wed Dec 04 2015 Krzysztof Czurylo <krzysztof.czurylo@intel.com>
 
 	* Version 0.4
