@@ -3,3 +3,4 @@
 # https://www.debian.org/doc/manuals/developers-reference/pkgs.html#newpackage
 new-package-should-close-itp-bug
 libpmem: package-name-doesnt-match-sonames
+libpmem: postinst-must-call-ldconfig

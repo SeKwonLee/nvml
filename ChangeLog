@@ -1,3 +1,14 @@
+Tue Jan 26 2016 Zakhar Volchak <zakhar.volchak@hpe.com>
+
+	* version 0.4-2l4tm
+	* MMU
+	Fixing Lintian errors and warnings:
+		- source-is-missing (override)
+		- native-package-with-dash-version (adding debian/source/format)
+		- maintainer-script-lacks-debhelper-token (fix in appropriate files)=
+	Couple more warnings were fixed that I lost track of.
+
+
 Thu Jan 21 2016 Justin Vreeland <justin.mcd.vreeland@hpe.com>
 
 	* version 0.4-l4tm

@@ -32,6 +32,7 @@
 #
 # magic-install.sh -- Script for installing magic script
 #
+#DEBHELPER#
 if ! grep -q "File: nvml" /etc/magic
 then
 	echo "Appending NVML magic to /etc/magic"

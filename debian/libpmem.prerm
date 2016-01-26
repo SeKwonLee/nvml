@@ -32,6 +32,7 @@
 #
 # magic-uninstall.sh -- Script for uninstalling magic script
 #
+#DEBHELPER#
 HDR_LOCAL=$(grep "File: nvml" /etc/magic)
 HDR_PKG=$(grep "File: nvml" /usr/share/nvml/nvml.magic)
 
