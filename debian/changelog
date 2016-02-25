@@ -1,3 +1,9 @@
+nvml (0.4.1+l4tm) unstable; urgency=medium
+
+  * Fixed instruction that's unavailible in EL0
+
+ -- Justin Vreeland <jvreeland@hpe.com>  Fri, 7 Mar 2016 10:14:45 -0700
+
 nvml (0.4+l4tm) unstable; urgency=medium
 
   * Fixing lintian errors and warnings

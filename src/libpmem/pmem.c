@@ -302,7 +302,7 @@
 	asm volatile("dsb\tst");
 
 #define	_aarch64_invalidate(addr)\
-	asm volatile("dc\tivac, %0" : : "r" (addr) : "memory");
+	asm volatile("dc\tcivac, %0" : : "r" (addr) : "memory");
 
 #endif
 
