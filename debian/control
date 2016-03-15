@@ -1,5 +1,5 @@
 Source: nvml
-Maintainer: Zakhar Volchak <zakhar.volchak@hpe.com>
+Maintainer: Justin Vreeland <jvreeland@hpe.com>
 Section: misc
 Priority: optional
 Build-Depends: debhelper (>= 9), uuid-dev
@@ -7,6 +7,8 @@ Standards-version: 3.9.6.1
 Homepage: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml/tree/hp_l4tm/src/libpmem
 Vcs-Browser: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml/tree/hp_l4tm/src/libpmem
 Vcs-Git: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml.git
+XS-Source-Origin: upstream https://github.com/pmem/nvml.git
+Origin: l4tm
 
 Package: libpmem
 Section: misc
