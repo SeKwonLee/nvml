@@ -4,11 +4,12 @@ Section: misc
 Priority: optional
 Build-Depends: debhelper (>= 9), uuid-dev
 Standards-version: 3.9.6.1
-Homepage: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml/tree/hp_l4tm/src/libpmem
-Vcs-Browser: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml/tree/hp_l4tm/src/libpmem
-Vcs-Git: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml.git
+Homepage: http://pmem.io/
+Vcs-Browser: https://github.hpe.com/hpelinux-l4tm/nvml
+Vcs-Git: https://github.hpe.com/hpelinux-l4tm/nvml.git
 XS-Source-Origin: upstream https://github.com/pmem/nvml.git
-Origin: l4tm
+XS-Upstream-Vulnerability-Management: https://github.com/pmem/nvml
+Origin: HPE
 
 Package: libpmem
 Section: misc
