@@ -1,37 +1,6 @@
-nvml (0.4.1+l4tm) catapult; urgency=medium
+nvml (0.4.1-1) unstable; urgency=medium
 
-  * Updated Packaging
+  * Updated Packaging for unstable
 
- -- Justin Vreeland <jvreeland@hpe.com>  Fri, 25 Mar 2016 11:25:10 -0600
+ -- Keith Packard <packard@hpe.com>  Mon, 21 Nov 2016 12:24:38 -0800
 
-nvml (0.4.1+l4tm) catapult; urgency=medium
-
-  * Updated packaging
-
- -- Justin Vreeland <jvreeland@hpe.com>  Wed, 16 Mar 2016 08:46:23 -0700
-
-nvml (0.4.1+l4tm) unstable; urgency=medium
-
-  * Fixed instruction that's unavailible in EL0
-
- -- Justin Vreeland <jvreeland@hpe.com>  Mon, 7 Mar 2016 10:14:45 -0700
-
-nvml (0.4+l4tm) unstable; urgency=medium
-
-  * Fixing lintian errors and warnings
-
- -- Zakhar Volchak <zakhar.volchak@hpe.com>  Tue, 26 Jan 2016 11:20:00 -0700
-
-
-nvml (0.4+l4tm) unstable; urgency=medium
-
-  * Packaging for arm64 & x86_64 release 0.4.
-
- -- Justin Vreeland <justin.mcd.vreeland@hpe.com>  Thu, 21 Jan 2016 19:58:28 -0700
-
-
-nvml (0.1) unstable; urgency=medium
-
-  * This is a first attempt to package NVML code.
-
- -- Zakhar Volchak <zakhar.volchak@hpe.com>  Tue, 19 Jan 2016 17:04:00 -0700

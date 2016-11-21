@@ -1,14 +1,11 @@
 Source: nvml
-Maintainer: Justin Vreeland <jvreeland@hpe.com>
+Maintainer: Keith Packard <packard@hpe.com>
+Uploaders: Keith Packard <keithp@keithp.com>
 Section: misc
 Priority: optional
 Build-Depends: debhelper (>= 9), uuid-dev
-Standards-version: 3.9.6.1
+Standards-version: 3.9.6
 Homepage: http://pmem.io/
-Vcs-Browser: https://github.hpe.com/hpelinux-l4tm/nvml
-Vcs-Git: https://github.hpe.com/hpelinux-l4tm/nvml.git
-XS-Source-Origin: upstream https://github.com/pmem/nvml.git
-XS-Upstream-Vulnerability-Management: https://github.com/pmem/nvml
 Origin: HPE
 
 Package: libpmem
@@ -18,7 +15,6 @@ Architecture: amd64 arm64
 Depends: ${shlibs:Depends}, ${misc:Depends} 
 Description: NVML libpmem library
  NVML library for Persistent Memory support
-Homepage: https://hlinux-gitlab.us.rdlabs.hpecorp.net/l4tm/nvml/tree/hp_l4tm/src/libpmem
 
 Package: libpmem-dev
 Section: libdevel
