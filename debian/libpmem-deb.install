@@ -1,6 +1,0 @@
-usr/lib/nvml_debug/libpmem.a usr/lib/nvml_dbg/
-usr/lib/nvml_debug/libpmem.so   usr/lib/nvml_dbg/
-usr/lib/nvml_debug/libpmem.so.* usr/lib/nvml_dbg/
-usr/lib/libpmem.so
-usr/include/libpmem.h
-usr/share/man/man3/libpmem.3.gz
